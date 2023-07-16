@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+//todo returm amounts in hryvnias instead of coins
 public class JarTransactionsService {
 
   private final MonoBankClient monoBankClient;
@@ -63,8 +64,6 @@ public class JarTransactionsService {
   }
 
   private void refreshInfo(String jarId, String startTime) {
-    log.info("initiated");
-
     List<JarTransaction> jarTransactions = monoBankClient.getJarTransactions(jarId, startTime);
 
     MultiValueMap<String, BigDecimal> donatesMap = new LinkedMultiValueMap<>();

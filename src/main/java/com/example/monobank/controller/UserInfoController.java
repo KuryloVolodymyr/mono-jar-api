@@ -1,6 +1,5 @@
 package com.example.monobank.controller;
 
-import com.example.monobank.model.JarStatisticResponse;
 import com.example.monobank.model.UserAccountsResponse;
 import com.example.monobank.service.UserInfoService;
 import lombok.RequiredArgsConstructor;
