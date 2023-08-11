@@ -1,84 +1,60 @@
 package com.example.monobank.service;
 
 import com.example.monobank.client.MonoBankClient;
-import com.example.monobank.model.TransactionDetails;
-import com.example.monobank.model.JarCommentsResponse;
+import com.example.monobank.model.AggregatedTransactionsInfo;
 import com.example.monobank.model.JarStatisticResponse;
-import com.example.monobank.model.JarTransaction;
+import com.example.monobank.model.MonoTransactionDetails;
+import com.example.monobank.model.TransactionInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-//todo returm amounts in hryvnias instead of coins
+//todo return amounts in hryvnias instead of coins
 public class JarTransactionsService {
 
   private final MonoBankClient monoBankClient;
 
-  private MultiValueMap<String, TransactionDetails> comments = new LinkedMultiValueMap<>();
-  private MultiValueMap<String, BigDecimal> donates = new LinkedMultiValueMap<>();
+  public JarStatisticResponse getJarStatistics(String jarId, String startTime, String endTime) {
+    Map<String, AggregatedTransactionsInfo> donates = getDonates(jarId, startTime, endTime);
 
-  public JarStatisticResponse getJarStatistics(String jarId, String startTime) {
-    refreshInfo(jarId, startTime);
-
-    Set<String> donatesSenders = donates.keySet();
-    List<TransactionDetails> transactionDetails = new ArrayList<>();
-
-    for (String sender : donatesSenders) {
-      BigDecimal totalDonate = BigDecimal.valueOf(donates.get(sender).stream().mapToLong(t -> t.longValue()).sum());
-      BigDecimal totalAmount = calculateAmount(totalDonate);
-      transactionDetails.add(new TransactionDetails(sender, totalAmount, null));
-    }
+    Collection<AggregatedTransactionsInfo> transactionDetails = donates.values();
 
     JarStatisticResponse jarStatisticResponse = new JarStatisticResponse();
-
     jarStatisticResponse.setTransactions(transactionDetails.stream().sorted().collect(Collectors.toList()));
-    jarStatisticResponse.setTotalAmount(BigDecimal.valueOf(transactionDetails.stream().mapToLong(t -> t.getAmount().longValue()).sum()));
+    jarStatisticResponse.setTotalAmount(BigDecimal.valueOf(transactionDetails.stream().mapToLong(t -> t.getTotalAmount().longValue()).sum()));
+
     return jarStatisticResponse;
   }
 
-  public List<JarCommentsResponse> getJarComments(String jarId, String startTime) {
-    refreshInfo(jarId, startTime);
+  private Map<String, AggregatedTransactionsInfo> getDonates(String jarId, String startTime, String endTime) {
+    List<MonoTransactionDetails> transactionsDetails = monoBankClient.getJarTransactions(jarId, startTime, endTime);
+    Map<String, AggregatedTransactionsInfo> donatesMap = new HashMap<>();
 
-    Set<String> donatesSenders = comments.keySet();
-    List<JarCommentsResponse> jarCommentsResponses = new ArrayList<>();
-    for (String sender : donatesSenders) {
-      jarCommentsResponses.add(new JarCommentsResponse(sender, comments.get(sender)));
-    }
-    return jarCommentsResponses;
-  }
+    for (MonoTransactionDetails transactionDetails : transactionsDetails) {
+      String sender = transactionDetails.getDescription();
+      AggregatedTransactionsInfo transactionsInfo;
 
-  private BigDecimal calculateAmount(BigDecimal amount) {
-    return amount;
-  }
-
-  private void refreshInfo(String jarId, String startTime) {
-    List<JarTransaction> jarTransactions = monoBankClient.getJarTransactions(jarId, startTime);
-
-    MultiValueMap<String, BigDecimal> donatesMap = new LinkedMultiValueMap<>();
-    MultiValueMap<String, TransactionDetails> commentsMap = new LinkedMultiValueMap<>();
-
-    for (JarTransaction jarResponse : jarTransactions) {
-      donatesMap.add(jarResponse.getDescription(), jarResponse.getAmount());
-
-      if (Objects.nonNull(jarResponse.getComment())) {
-        BigDecimal amount = calculateAmount(jarResponse.getAmount());
-        commentsMap.add(jarResponse.getDescription(), new TransactionDetails(jarResponse.getDescription(), amount, jarResponse.getComment()));
+      if (donatesMap.containsKey(sender)){
+        transactionsInfo = donatesMap.get(sender);
+      } else {
+        transactionsInfo = new AggregatedTransactionsInfo();
       }
-    }
 
-    donates = donatesMap;
-    comments = commentsMap;
+      donatesMap.put(sender, transactionsInfo.addTransaction(TransactionInfo.of(transactionDetails)));
+    }
+    return donatesMap;
   }
 }

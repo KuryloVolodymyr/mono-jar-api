@@ -5,7 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class JarTransaction {
+public class MonoTransactionDetails {
   private String id;
   private BigDecimal time;
   private String description;

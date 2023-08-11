@@ -9,5 +9,5 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JarCommentsResponse {
   private final String sender;
-  private final List<TransactionDetails> comments;
+  private final List<AggregatedTransactionsInfo> comments;
 }
