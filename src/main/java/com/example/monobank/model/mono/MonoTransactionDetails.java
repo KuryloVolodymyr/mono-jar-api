@@ -1,4 +1,4 @@
-package com.example.monobank.model;
+package com.example.monobank.model.mono;
 
 import lombok.Data;
 

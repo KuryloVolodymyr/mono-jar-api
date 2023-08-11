@@ -1,5 +1,7 @@
 package com.example.monobank.model;
 
+import com.example.monobank.model.mono.Account;
+import com.example.monobank.model.mono.Jar;
 import lombok.Data;
 
 import java.util.List;

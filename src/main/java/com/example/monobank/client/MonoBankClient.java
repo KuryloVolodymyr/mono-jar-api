@@ -1,6 +1,6 @@
 package com.example.monobank.client;
 
-import com.example.monobank.model.MonoTransactionDetails;
+import com.example.monobank.model.mono.MonoTransactionDetails;
 import com.example.monobank.model.UserAccountsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,8 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

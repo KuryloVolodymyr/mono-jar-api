@@ -1,5 +1,6 @@
 package com.example.monobank.model;
 
+import com.example.monobank.model.mono.MonoTransactionDetails;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -11,6 +12,7 @@ public class TransactionInfo {
   private String sender;
   private BigDecimal amount;
   private String comment;
+  private BigDecimal executedAt;
 
 
   public static TransactionInfo of(MonoTransactionDetails monoTransactionDetails) {
@@ -18,6 +20,7 @@ public class TransactionInfo {
     transactionInfo.setSender(monoTransactionDetails.getDescription());
     transactionInfo.setAmount(monoTransactionDetails.getAmount());
     transactionInfo.setComment(monoTransactionDetails.getComment());
+    transactionInfo.setExecutedAt(monoTransactionDetails.getTime());
 
     return transactionInfo;
   }

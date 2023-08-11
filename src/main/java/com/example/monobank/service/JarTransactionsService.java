@@ -3,16 +3,13 @@ package com.example.monobank.service;
 import com.example.monobank.client.MonoBankClient;
 import com.example.monobank.model.AggregatedTransactionsInfo;
 import com.example.monobank.model.JarStatisticResponse;
-import com.example.monobank.model.MonoTransactionDetails;
+import com.example.monobank.model.mono.MonoTransactionDetails;
 import com.example.monobank.model.TransactionInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
