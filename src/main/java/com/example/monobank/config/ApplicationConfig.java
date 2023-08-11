@@ -16,12 +16,10 @@ public class ApplicationConfig {
     return new RestTemplate();
   }
 
-  @Bean
-  public ObjectMapper objectMapper(){
-    ObjectMapper objectMapper = new ObjectMapper();
-    JavaTimeModule module = new JavaTimeModule();
-    objectMapper.registerModule(module);
-    return objectMapper;
-  }
+//  @Bean
+//  public ObjectMapper objectMapper(){
+//    ObjectMapper objectMapper = new ObjectMapper();
+//    return objectMapper;
+//  }
 
 }

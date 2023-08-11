@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ public class JarTransactionsService {
 
   private final MonoBankClient monoBankClient;
 
-  public JarStatisticResponse getJarStatistics(String jarId, String startTime, String endTime) {
+  public JarStatisticResponse getJarStatistics(String jarId, LocalDateTime startTime, LocalDateTime endTime) {
     Map<String, AggregatedTransactionsInfo> donates = getDonates(jarId, startTime, endTime);
 
     Collection<AggregatedTransactionsInfo> transactionDetails = donates.values();
@@ -36,7 +37,7 @@ public class JarTransactionsService {
     return jarStatisticResponse;
   }
 
-  private Map<String, AggregatedTransactionsInfo> getDonates(String jarId, String startTime, String endTime) {
+  private Map<String, AggregatedTransactionsInfo> getDonates(String jarId, LocalDateTime startTime, LocalDateTime endTime) {
     List<MonoTransactionDetails> transactionsDetails = monoBankClient.getJarTransactions(jarId, startTime, endTime);
     Map<String, AggregatedTransactionsInfo> donatesMap = new HashMap<>();
 

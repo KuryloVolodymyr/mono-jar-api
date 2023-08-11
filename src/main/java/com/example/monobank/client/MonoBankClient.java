@@ -12,6 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,8 +42,9 @@ public class MonoBankClient {
 
   private final RestTemplate restTemplate;
 
-  public List<MonoTransactionDetails> getJarTransactions(String accountId, String startDate, String endDate) {
+  public List<MonoTransactionDetails> getJarTransactions(String accountId, LocalDateTime startDate, LocalDateTime endDate) {
     List<MonoTransactionDetails> monoTransactions = getTransactionBatchInValidTimeRange(accountId, startDate, endDate);
+
     return monoTransactions;
   }
 
@@ -53,7 +58,7 @@ public class MonoBankClient {
   }
 
 
-  private List<MonoTransactionDetails> getTransactionBatchInValidTimeRange(String accountId, String startDate, String endDate){
+  private List<MonoTransactionDetails> getTransactionBatchInValidTimeRange(String accountId, LocalDateTime startDate, LocalDateTime endDate){
     List<MonoTransactionDetails> monoTransactionDetailsInValidTimeRange = new ArrayList<>();
     List<MonoTransactionDetails> transactionBatch;
 
@@ -66,7 +71,7 @@ public class MonoBankClient {
 
   }
 
-  private List<MonoTransactionDetails> getTransactionsBatch(String accountId, String startDate, String endDate) {
+  private List<MonoTransactionDetails> getTransactionsBatch(String accountId, LocalDateTime startDate, LocalDateTime endDate) {
     HttpHeaders headers = new HttpHeaders();
     headers.add(MONO_AUTH_HEADER_NAME, token);
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -74,8 +79,8 @@ public class MonoBankClient {
 
     Map<String, String> uriParams = new HashMap<>();
     uriParams.put("accountId", accountId);
-    uriParams.put("startTime", startDate);
-    uriParams.put("endTime", endDate);
+    uriParams.put("startTime", String.valueOf(startDate.toInstant(ZoneOffset.UTC).getEpochSecond()));
+    uriParams.put("endTime", String.valueOf(endDate.toInstant(ZoneOffset.UTC).getEpochSecond()));
 
     ResponseEntity<MonoTransactionDetails[]> exchange = restTemplate.exchange(baseUrl + statementsUrl, HttpMethod.GET, entity, MonoTransactionDetails[].class, uriParams);
     return List.of(exchange.getBody());

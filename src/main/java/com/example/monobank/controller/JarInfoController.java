@@ -3,6 +3,7 @@ package com.example.monobank.controller;
 import com.example.monobank.model.JarStatisticResponse;
 import com.example.monobank.service.JarTransactionsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +23,8 @@ public class JarInfoController {
 
   @GetMapping(value = "/donates/{jarId}/{startTime}/{endTime}")
   public JarStatisticResponse getAllDonates(@PathVariable String jarId,
-                                            @PathVariable String startTime,
-                                            @PathVariable String endTime){
+                                            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+                                            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
 
     return jarReadingService.getJarStatistics(jarId, startTime, endTime);
   }
