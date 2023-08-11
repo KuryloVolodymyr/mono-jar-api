@@ -12,9 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,10 +38,27 @@ public class MonoBankClient {
 
   public static final String MONO_AUTH_HEADER_NAME = "X-Token";
 
+  public static final Long MONTH_IN_MILLIS = 2_592_000L;
+
   private final RestTemplate restTemplate;
 
   public List<MonoTransactionDetails> getJarTransactions(String accountId, LocalDateTime startDate, LocalDateTime endDate) {
-    List<MonoTransactionDetails> monoTransactions = getTransactionBatchInValidTimeRange(accountId, startDate, endDate);
+
+    long endTimestamp = endDate.toEpochSecond(ZoneOffset.UTC);
+    long startTimestamp = startDate.toEpochSecond(ZoneOffset.UTC);
+
+    List<MonoTransactionDetails> monoTransactions = new ArrayList<>();
+
+
+    //todo MAKE PRETTY
+    do {
+      if (startTimestamp + MONTH_IN_MILLIS > endTimestamp){
+        monoTransactions.addAll(getTransactionBatchInValidTimeRange(accountId, startTimestamp, endTimestamp));
+      } else {
+        monoTransactions.addAll(getTransactionBatchInValidTimeRange(accountId, startTimestamp, startTimestamp + MONTH_IN_MILLIS));
+      }
+      startTimestamp = startTimestamp + MONTH_IN_MILLIS;
+    } while (endTimestamp - startTimestamp > MONTH_IN_MILLIS);
 
     return monoTransactions;
   }
@@ -58,12 +73,12 @@ public class MonoBankClient {
   }
 
 
-  private List<MonoTransactionDetails> getTransactionBatchInValidTimeRange(String accountId, LocalDateTime startDate, LocalDateTime endDate){
+  private List<MonoTransactionDetails> getTransactionBatchInValidTimeRange(String accountId, Long startTimestamp, Long endTimestamp) {
     List<MonoTransactionDetails> monoTransactionDetailsInValidTimeRange = new ArrayList<>();
     List<MonoTransactionDetails> transactionBatch;
 
     do {
-      transactionBatch = getTransactionsBatch(accountId, startDate, endDate);
+      transactionBatch = getTransactionsBatch(accountId, startTimestamp, endTimestamp);
       monoTransactionDetailsInValidTimeRange.addAll(transactionBatch);
     } while (transactionBatch.size() == 500);
 
@@ -71,7 +86,7 @@ public class MonoBankClient {
 
   }
 
-  private List<MonoTransactionDetails> getTransactionsBatch(String accountId, LocalDateTime startDate, LocalDateTime endDate) {
+  private List<MonoTransactionDetails> getTransactionsBatch(String accountId, Long startTimestamp, Long endTimestamp) {
     HttpHeaders headers = new HttpHeaders();
     headers.add(MONO_AUTH_HEADER_NAME, token);
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -79,8 +94,8 @@ public class MonoBankClient {
 
     Map<String, String> uriParams = new HashMap<>();
     uriParams.put("accountId", accountId);
-    uriParams.put("startTime", String.valueOf(startDate.toInstant(ZoneOffset.UTC).getEpochSecond()));
-    uriParams.put("endTime", String.valueOf(endDate.toInstant(ZoneOffset.UTC).getEpochSecond()));
+    uriParams.put("startTime", String.valueOf(startTimestamp));
+    uriParams.put("endTime", String.valueOf(endTimestamp));
 
     ResponseEntity<MonoTransactionDetails[]> exchange = restTemplate.exchange(baseUrl + statementsUrl, HttpMethod.GET, entity, MonoTransactionDetails[].class, uriParams);
     return List.of(exchange.getBody());
